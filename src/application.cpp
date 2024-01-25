@@ -1,5 +1,7 @@
 #include "application.hpp"
 
+#include <mutex>
+#include <thread>
 #include <chrono>
 #include <iostream>
 
@@ -27,7 +29,9 @@ void FallingSandApplication::run()
 
     std::chrono::duration<double> delta;
 
-    int counter = 0;
+    int frameCounter = 0;
+
+    simulationThread = std::thread(&FallingSandSimulation::simulationLoop, &fallingSandSimulation);
 
     isRunning = true;
     draw();
@@ -38,19 +42,19 @@ void FallingSandApplication::run()
         
         handleEvents();
 
-        tick();
-
         draw();
 
         delta = now() - start;
 
-        if (counter % static_cast<int>(10.0 / delta.count()) == 0)
+        if (frameCounter % static_cast<int>(10.0 / delta.count()) == 0)
         {
             std::cout << delta.count() << "\n";
         }
 
-        counter++;
+        frameCounter++;
     }
+
+    simulationThread.join();
 
     destroySdl();
 }
@@ -145,17 +149,29 @@ void FallingSandApplication::handleEvents()
     }
 }
 
-void FallingSandApplication::tick()
-{
-    fallingSandSimulation.tick();
-}
-
 void FallingSandApplication::draw()
 {
+    std::lock_guard<std::mutex> lock(renderMutex);
+
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    fallingSandSimulation.draw(renderer);
+    { // draw the sand grid
+        const std::vector<bool>& sandGrid = fallingSandSimulation.getSandGrid();
+
+        SDL_SetRenderDrawColor(renderer, 255, 127, 31, 255);
+
+        for (unsigned int x = 0; x < displayWidth; x++)
+        {
+            for (unsigned int y = 0; y < displayHeight; y++)
+            {
+                if (sandGrid[x * displayHeight + y])
+                {
+                    SDL_RenderDrawPoint(renderer, x, y);
+                }
+            }
+        }
+    }
 
     SDL_RenderPresent(renderer);
 }

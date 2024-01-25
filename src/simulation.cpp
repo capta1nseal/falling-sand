@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <mutex>
 #include <iostream>
 
 FallingSandSimulation::FallingSandSimulation()
@@ -31,13 +32,29 @@ void FallingSandSimulation::initializeSimulation(unsigned int width, unsigned in
     oldSandGrid = *(&sandGrid2);
 }
 
+void FallingSandSimulation::simulationLoop()
+{
+    std::cout << "test1\n";
+    for (int i = 0; i < 1000; i++)
+    {
+        tick();
+    }
+}
+
+const std::vector<bool>& FallingSandSimulation::getSandGrid() const
+{
+    return newSandGrid;
+}
+
 void FallingSandSimulation::tick()
 {
+    std::lock_guard<std::mutex> lock(simulationMutex);
+
     swapGrids();
 
     oldAt(rand() % 100, rand() % 100) = true;
 
-    newSandGrid = oldSandGrid;
+    newSandGrid = oldSandGrid; // This *copies*
 
     for (unsigned int x = 0; x < m_width; x++)
     {
@@ -50,27 +67,6 @@ void FallingSandSimulation::tick()
                     std::swap(at(x, y), at(x, y + 1));
                     continue;
                 }
-            }
-        }
-    }
-}
-
-void FallingSandSimulation::swapGrids()
-{
-    std::swap(newSandGrid, oldSandGrid);
-}
-
-void FallingSandSimulation::draw(SDL_Renderer *renderer)
-{
-    SDL_SetRenderDrawColor(renderer, 255, 127, 31, 255);
-
-    for (unsigned int x = 0; x < m_width; x++)
-    {
-        for (unsigned int y = 0; y < m_height; y++)
-        {
-            if (at(x, y))
-            {
-                SDL_RenderDrawPoint(renderer, x, y);
             }
         }
     }
@@ -94,4 +90,9 @@ std::_Bit_reference FallingSandSimulation::oldAt(unsigned int x, unsigned int y)
     }
 
     return oldSandGrid[x * m_height + y];
+}
+
+void FallingSandSimulation::swapGrids()
+{
+    std::swap(newSandGrid, oldSandGrid);
 }

@@ -1,6 +1,9 @@
 #ifndef _FALLINGSANDAPPLICATION
 #define _FALLINGSANDAPPLICATION
 
+#include <mutex>
+#include <thread>
+
 #include <SDL2/SDL.h>
 
 #include "simulation.hpp"
@@ -26,6 +29,10 @@ private:
     SDL_Point mousePosition;
 
     FallingSandSimulation fallingSandSimulation;
+
+    std::thread simulationThread;
+
+    std::mutex renderMutex;
 
     void initializeSdl();
     void destroySdl();

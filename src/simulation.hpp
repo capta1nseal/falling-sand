@@ -2,7 +2,7 @@
 #define _FALLINGSANDSIMULATION
 
 #include <vector>
-#include <SDL2/SDL_render.h>
+#include <mutex>
 
 class FallingSandSimulation
 {
@@ -11,9 +11,9 @@ public:
 
     void initializeSimulation(unsigned int width, unsigned int height);
 
-    void tick();
+    void simulationLoop();
 
-    void draw(SDL_Renderer *renderer);
+    const std::vector<bool>& getSandGrid() const;
 
 private:
     unsigned int m_width, m_height;
@@ -22,11 +22,14 @@ private:
     std::vector<bool> newSandGrid;
     std::vector<bool> oldSandGrid;
 
+    std::mutex simulationMutex;
+
+    void tick();
+
     std::_Bit_reference at(unsigned int x, unsigned int y);
     std::_Bit_reference oldAt(unsigned int x, unsigned int y);
 
     void swapGrids();
-
 };
 
 #endif
