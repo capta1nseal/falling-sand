@@ -1,6 +1,9 @@
 #ifndef _FALLINGSANDAPPLICATION
 #define _FALLINGSANDAPPLICATION
 
+#include <mutex>
+#include <thread>
+
 #include <SDL2/SDL.h>
 
 #include "simulation.hpp"
@@ -27,14 +30,16 @@ private:
 
     FallingSandSimulation fallingSandSimulation;
 
+    std::thread simulationThread;
+
+    std::mutex renderMutex;
+
     void initializeSdl();
     void destroySdl();
 
     void initializeSimulation();
 
     void handleEvents();
-
-    void tick();
 
     void draw();
 

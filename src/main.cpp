@@ -2,7 +2,7 @@
 
 int main()
 {
-    auto fallingSandApplication = FallingSandApplication();
+    FallingSandApplication fallingSandApplication;
 
     fallingSandApplication.run();
 }
