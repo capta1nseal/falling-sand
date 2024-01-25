@@ -16,7 +16,7 @@ private:
     bool isRunning;
     unsigned int displayWidth, displayHeight;
     bool isFullscreen;
-    
+
     SDL_DisplayMode displayMode;
     SDL_Window* window;
     SDL_Renderer* renderer;

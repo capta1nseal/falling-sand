@@ -84,7 +84,7 @@ void FallingSandApplication::destroySdl()
 
 void FallingSandApplication::initializeSimulation()
 {
-    // fallingSandSimulation.<>;
+    fallingSandSimulation.initializeSimulation(displayWidth, displayHeight);
 }
 
 void FallingSandApplication::handleEvents()
@@ -155,7 +155,7 @@ void FallingSandApplication::draw()
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    // draw the state of the simulation
+    fallingSandSimulation.draw(renderer);
 
     SDL_RenderPresent(renderer);
 }
