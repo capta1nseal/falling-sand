@@ -46,13 +46,15 @@ void FallingSandApplication::run()
 
         delta = now() - start;
 
-        if (frameCounter % static_cast<int>(10.0 / delta.count()) == 0)
+        if (frameCounter % static_cast<int>(10.0 / (delta.count() + 0.0001)) == 0)
         {
             std::cout << delta.count() << "\n";
         }
 
         frameCounter++;
     }
+
+    fallingSandSimulation.stop();
 
     simulationThread.join();
 
@@ -109,6 +111,8 @@ void FallingSandApplication::handleEvents()
             {
                 displayWidth = event.window.data1;
                 displayHeight = event.window.data2;
+                
+                fallingSandSimulation.initializeSimulation(displayWidth, displayHeight);
             }
             break;
         case SDL_KEYDOWN:
@@ -136,9 +140,8 @@ void FallingSandApplication::handleEvents()
             switch (event.button.button)
             {
             case SDL_BUTTON_LEFT:
-            {
+                fallingSandSimulation.spawn(event.button.x, event.button.y, 50);
                 break;
-            }
             default:
                 break;
             }

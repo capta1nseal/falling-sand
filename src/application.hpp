@@ -41,8 +41,6 @@ private:
 
     void handleEvents();
 
-    void tick();
-
     void draw();
 
 };
