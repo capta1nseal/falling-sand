@@ -24,6 +24,10 @@ private:
     SDL_Window* window;
     SDL_Renderer* renderer;
 
+    SDL_Texture *renderTexture;
+    unsigned char* texturePixels;
+    int texturePitch;
+
     SDL_Event event;
     
     SDL_Point mousePosition;
@@ -38,6 +42,8 @@ private:
     void destroySdl();
 
     void initializeSimulation();
+
+    void initializeRenderTexture();
 
     void handleEvents();
 

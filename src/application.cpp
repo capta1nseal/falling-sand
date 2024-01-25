@@ -91,6 +91,8 @@ void FallingSandApplication::destroySdl()
 void FallingSandApplication::initializeSimulation()
 {
     fallingSandSimulation.initializeSimulation(displayWidth, displayHeight);
+
+    initializeRenderTexture();
 }
 
 void FallingSandApplication::handleEvents()
@@ -113,6 +115,8 @@ void FallingSandApplication::handleEvents()
                 displayHeight = event.window.data2;
                 
                 fallingSandSimulation.initializeSimulation(displayWidth, displayHeight);
+            
+                initializeRenderTexture();
             }
             break;
         case SDL_KEYDOWN:
@@ -152,12 +156,20 @@ void FallingSandApplication::handleEvents()
     }
 }
 
+void FallingSandApplication::initializeRenderTexture()
+{
+    renderTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
+    SDL_TEXTUREACCESS_STREAMING, displayWidth, displayHeight);
+}
+
 void FallingSandApplication::draw()
 {
     std::lock_guard<std::mutex> lock(renderMutex);
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+
+    SDL_LockTexture(renderTexture, NULL, (void**)&texturePixels, &texturePitch);
 
     { // draw the sand grid
         const std::vector<bool>& sandGrid = fallingSandSimulation.getSandGrid();
@@ -170,11 +182,28 @@ void FallingSandApplication::draw()
             {
                 if (sandGrid[x * displayHeight + y])
                 {
-                    SDL_RenderDrawPoint(renderer, x, y);
+                    texturePixels[y * texturePitch + x * 4] = static_cast<unsigned char>(31);
+                    texturePixels[y * texturePitch + x * 4 + 1] = static_cast<unsigned char>(127);
+                    texturePixels[y * texturePitch + x * 4 + 2] = static_cast<unsigned char>(255);
+                    texturePixels[y * texturePitch + x * 4 + 3] = static_cast<unsigned char>(255);
+                }
+                else
+                {
+                    texturePixels[y * texturePitch + x * 4] = static_cast<unsigned char>(0);
+                    texturePixels[y * texturePitch + x * 4 + 1] = static_cast<unsigned char>(0);
+                    texturePixels[y * texturePitch + x * 4 + 2] = static_cast<unsigned char>(0);
+                    texturePixels[y * texturePitch + x * 4 + 3] = static_cast<unsigned char>(255);
+
                 }
             }
         }
     }
+
+    SDL_UnlockTexture(renderTexture);
+
+    SDL_SetTextureBlendMode(renderTexture, SDL_BLENDMODE_BLEND);
+
+    SDL_RenderCopy(renderer, renderTexture, NULL, NULL);
 
     SDL_RenderPresent(renderer);
 }
