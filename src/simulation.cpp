@@ -63,7 +63,7 @@ void FallingSandSimulation::simulationLoop()
     }
 }
 
-const std::vector<bool>& FallingSandSimulation::getSandGrid()
+const std::vector<SandGrain>& FallingSandSimulation::getSandGrid()
 {
     std::lock_guard<std::mutex> lock(simulationMutex);
     return newSandGrid;
@@ -78,12 +78,16 @@ void FallingSandSimulation::spawn(unsigned int x, unsigned int y, unsigned int r
     if (y < radius) y = radius;
     if (y > m_height - 1 - radius) y = m_height - 1 - radius;
 
+    unsigned char baseR = rand() % 255;
+    unsigned char baseG = rand() % 255;
+    unsigned char baseB = rand() % 255;
+
     for (unsigned int i = x - radius; i < x + radius - 1; i++)
     {
         for (unsigned int j = y - radius; j < y + radius - 1; j++)
         {
-            at(i, j) = true;
-            oldAt(i, j) = true;
+            at(i, j) = SandGrain(baseR, baseG, baseB);
+            oldAt(i, j) = SandGrain(baseR, baseG, baseB);
         }
     }
 }
@@ -98,8 +102,8 @@ void FallingSandSimulation::tick()
         for (unsigned int y = 0; y < m_height; y++)
         {
             
-            bool current = at(x, y);
-            bool under = at(x, y + 1);
+            bool current = at(x, y) == true;
+            bool under = at(x, y + 1) == true;
 
             if (current)
             {
@@ -109,13 +113,13 @@ void FallingSandSimulation::tick()
                     continue;
                 }
 
-                bool left = at(std::max(static_cast<int>(x - 1), 0), y);
-                bool right = at(x + 1, y);
+                bool left = at(std::max(static_cast<int>(x - 1), 0), y) == true;
+                bool right = at(x + 1, y) == true;
 
                 if (left and right) continue;
 
-                bool downRight = at(x + 1, y + 1);
-                bool downLeft = at(std::max(0, static_cast<int>(x - 1)), y + 1);
+                bool downRight = at(x + 1, y + 1) == true;
+                bool downLeft = at(std::max(0, static_cast<int>(x - 1)), y + 1) == true;
 
                 if (not (downLeft or downRight))
                 {
@@ -139,7 +143,7 @@ void FallingSandSimulation::tick()
     }
 }
 
-std::_Bit_reference FallingSandSimulation::at(unsigned int x, unsigned int y)
+SandGrain& FallingSandSimulation::at(unsigned int x, unsigned int y)
 {
     if (y == m_height) return at(x, y - 1);
 
@@ -148,7 +152,7 @@ std::_Bit_reference FallingSandSimulation::at(unsigned int x, unsigned int y)
     return newSandGrid[x * m_height + y];
 }
 
-std::_Bit_reference FallingSandSimulation::oldAt(unsigned int x, unsigned int y)
+SandGrain& FallingSandSimulation::oldAt(unsigned int x, unsigned int y)
 {
     if (y == m_height) return oldAt(x, y - 1);
 

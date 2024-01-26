@@ -172,19 +172,23 @@ void FallingSandApplication::draw()
     SDL_LockTexture(renderTexture, NULL, reinterpret_cast<void**> (&texturePixels), &texturePitch);
 
     { // draw the sand grid
-        const std::vector<bool>& sandGrid = fallingSandSimulation.getSandGrid();
+        const std::vector<SandGrain>& sandGrid = fallingSandSimulation.getSandGrid();
 
         SDL_SetRenderDrawColor(renderer, 255, 127, 31, 255);
+
+        SandGrain currentGrain;
 
         for (unsigned int x = 0; x < displayWidth; x++)
         {
             for (unsigned int y = 0; y < displayHeight; y++)
             {
-                if (sandGrid[x * displayHeight + y])
+                currentGrain = sandGrid[x * displayHeight + y];
+
+                if (currentGrain == true)
                 {
-                    texturePixels[y * texturePitch + x * 4] = static_cast<unsigned char>(31);
-                    texturePixels[y * texturePitch + x * 4 + 1] = static_cast<unsigned char>(127);
-                    texturePixels[y * texturePitch + x * 4 + 2] = static_cast<unsigned char>(255);
+                    texturePixels[y * texturePitch + x * 4] = currentGrain.b;
+                    texturePixels[y * texturePitch + x * 4 + 1] = currentGrain.g;
+                    texturePixels[y * texturePitch + x * 4 + 2] = currentGrain.r;
                     texturePixels[y * texturePitch + x * 4 + 3] = static_cast<unsigned char>(255);
                 }
                 else

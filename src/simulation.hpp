@@ -4,6 +4,8 @@
 #include <vector>
 #include <mutex>
 
+#include "sandgrain.hpp"
+
 class FallingSandSimulation
 {
 public:
@@ -15,25 +17,25 @@ public:
 
     void simulationLoop();
 
-    const std::vector<bool>& getSandGrid();
+    const std::vector<SandGrain>& getSandGrid();
 
     void spawn(unsigned int x, unsigned int y, unsigned int radius);
 
 private:
     unsigned int m_width, m_height;
-    std::vector<bool> sandGrid1;
-    std::vector<bool> sandGrid2;
+    std::vector<SandGrain> sandGrid1;
+    std::vector<SandGrain> sandGrid2;
     int newGridNumber;
-    std::vector<bool> newSandGrid;
-    std::vector<bool> oldSandGrid;
+    std::vector<SandGrain> newSandGrid;
+    std::vector<SandGrain> oldSandGrid;
 
     bool isRunning;
     std::mutex simulationMutex;
 
     void tick();
 
-    std::_Bit_reference at(unsigned int x, unsigned int y);
-    std::_Bit_reference oldAt(unsigned int x, unsigned int y);
+    SandGrain& at(unsigned int x, unsigned int y);
+    SandGrain& oldAt(unsigned int x, unsigned int y);
 
     void swapGrids();
 };
