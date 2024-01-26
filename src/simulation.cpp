@@ -41,7 +41,7 @@ void FallingSandSimulation::initializeSimulation(unsigned int width, unsigned in
 
     for (int y = 0; y < std::min(10, static_cast<int>(height - 1)); y++)
     {
-        for (int x = 0; x < width; x++)
+        for (unsigned int x = 0; x < width; x++)
         {
             at(x, y) = true;
             oldAt(x, y) = true;
@@ -78,9 +78,9 @@ void FallingSandSimulation::spawn(unsigned int x, unsigned int y, unsigned int r
     if (y < radius) y = radius;
     if (y > m_height - 1 - radius) y = m_height - 1 - radius;
 
-    for (int i = x - radius; i < x + radius - 1; i++)
+    for (unsigned int i = x - radius; i < x + radius - 1; i++)
     {
-        for (int j = y - radius; j < y + radius - 1; j++)
+        for (unsigned int j = y - radius; j < y + radius - 1; j++)
         {
             at(i, j) = true;
             oldAt(i, j) = true;
@@ -92,7 +92,7 @@ void FallingSandSimulation::tick()
 {
     oldSandGrid = newSandGrid;
 
-    for (int x = 0; x < m_width; x++)
+    for (unsigned int x = 0; x < m_width; x++)
     {
         std::lock_guard<std::mutex> lock(simulationMutex);
         for (unsigned int y = 0; y < m_height; y++)
@@ -109,13 +109,13 @@ void FallingSandSimulation::tick()
                     continue;
                 }
 
-                bool left = at(std::max(x - 1, 0), y);
+                bool left = at(std::max(static_cast<int>(x - 1), 0), y);
                 bool right = at(x + 1, y);
 
                 if (left and right) continue;
 
                 bool downRight = at(x + 1, y + 1);
-                bool downLeft = at(std::max(0, x - 1), y + 1);
+                bool downLeft = at(std::max(0, static_cast<int>(x - 1)), y + 1);
 
                 if (not (downLeft or downRight))
                 {
@@ -124,7 +124,7 @@ void FallingSandSimulation::tick()
                 }
                 if (downRight)
                 {
-                    std::swap(oldAt(x, y), oldAt(std::max(0, x - 1), y + 1));
+                    std::swap(oldAt(x, y), oldAt(std::max(0, static_cast<int>(x - 1)), y + 1));
                     continue;
                 }
                 std::swap(oldAt(x, y), oldAt(x + 1, y + 1));
