@@ -103,18 +103,25 @@ void FallingSandSimulation::tick()
         {
             
             bool current = at(x, y) == true;
-            bool under = at(x, y + 1) == true;
 
             if (current)
             {
+                if (y == m_height - 1) continue;
+                bool under = at(x, y + 1) == true;
+
                 if (not under)
                 {
                     std::swap(oldAt(x, y), oldAt(x, y + 1));
                     continue;
                 }
 
-                bool left = at(std::max(static_cast<int>(x - 1), 0), y) == true;
-                bool right = at(x + 1, y) == true;
+                bool left, right;
+
+                if (x < 1) left = true;
+                else left = at(x - 1, y) == true;
+
+                if (x > m_width - 1) right = true;
+                else right = at(x + 1, y) == true;
 
                 if (left and right) continue;
 
@@ -123,15 +130,24 @@ void FallingSandSimulation::tick()
 
                 if (not (downLeft or downRight))
                 {
-                    std::swap(oldAt(x, y), oldAt(x + (1 - 2 * (rand() % 2)), y + 1));
+                    if (not (left or right))
+                    {
+                        std::swap(oldAt(x, y), oldAt(x + (1 - 2 * (rand() % 2)), y + 1));
+                        continue;
+                    }
+                    if (left) std::swap(oldAt(x, y), oldAt(x + 1, y + 1));
+                    else std::swap(oldAt(x, y), oldAt(x - 1, y + 1));
                     continue;
                 }
-                if (downRight)
+                if (downRight and not downLeft and not left)
                 {
                     std::swap(oldAt(x, y), oldAt(std::max(0, static_cast<int>(x - 1)), y + 1));
                     continue;
                 }
-                std::swap(oldAt(x, y), oldAt(x + 1, y + 1));
+                if (downLeft and not downRight and not right)
+                {
+                    std::swap(oldAt(x, y), oldAt(x + 1, y + 1));
+                }
             }
         }
     }
