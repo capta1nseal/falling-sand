@@ -78,16 +78,16 @@ void FallingSandSimulation::spawn(unsigned int x, unsigned int y, unsigned int r
     if (y < radius) y = radius;
     if (y > m_height - 1 - radius) y = m_height - 1 - radius;
 
-    unsigned char baseR = rand() % 255;
-    unsigned char baseG = rand() % 255;
-    unsigned char baseB = rand() % 255;
+    double baseH = (rand() / static_cast<double>(RAND_MAX)) * 360.0;
+    double baseS = (rand() / static_cast<double>(RAND_MAX)) * 0.5 + 0.25;
+    double baseV = (rand() / static_cast<double>(RAND_MAX)) * 0.25 + 0.625;
 
     for (unsigned int i = x - radius; i < x + radius - 1; i++)
     {
         for (unsigned int j = y - radius; j < y + radius - 1; j++)
         {
-            at(i, j) = SandGrain(baseR, baseG, baseB);
-            oldAt(i, j) = SandGrain(baseR, baseG, baseB);
+            at(i, j) = SandGrain(baseH, baseS, baseV);
+            oldAt(i, j) = SandGrain(baseH, baseS, baseV);
         }
     }
 }
