@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <mutex>
+#include <random>
 
 #include "sandgrain.hpp"
 
@@ -30,6 +31,9 @@ private:
     std::vector<SandGrain> oldSandGrid;
     
     std::vector<SandGrain> safe_sandGrid;
+
+    std::default_random_engine randomEngine{std::random_device{}()};
+    std::uniform_int_distribution<int> coinFlip;
 
     bool isRunning;
     std::mutex simulationMutex;

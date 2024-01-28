@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <mutex>
+#include <random>
 
 FallingSandSimulation::FallingSandSimulation()
 {
@@ -17,6 +18,8 @@ FallingSandSimulation::FallingSandSimulation()
     newGridNumber = 1;
     newSandGrid = *(&sandGrid1);
     oldSandGrid = *(&sandGrid2);
+
+    coinFlip = std::uniform_int_distribution<int>(0, 1);
 
     isRunning = false;
 }
@@ -86,16 +89,26 @@ void FallingSandSimulation::spawn(unsigned int x, unsigned int y, unsigned int r
     if (y < radius) y = radius;
     if (y > m_height - 1 - radius) y = m_height - 1 - radius;
 
-    double baseH = (rand() / static_cast<double>(RAND_MAX)) * 360.0;
-    double baseS = (rand() / static_cast<double>(RAND_MAX)) * 0.5 + 0.25;
-    double baseV = (rand() / static_cast<double>(RAND_MAX)) * 0.25 + 0.625;
+    using UniformDistribution = std::uniform_real_distribution<double>;
 
+    double baseH = (UniformDistribution(0.0, 360.0))(randomEngine);
+    double baseS = (UniformDistribution(0.25, 0.75))(randomEngine);
+    double baseV = (UniformDistribution(0.625, 0.875))(randomEngine);
+
+    UniformDistribution saturationDistribution(-0.05, 0.05);
+    UniformDistribution valueDistribution(-0.05, 0.05);
+
+    std::lock_guard<std::mutex> lock(simulationMutex);
     for (unsigned int i = x - radius; i < x + radius - 1; i++)
     {
         for (unsigned int j = y - radius; j < y + radius - 1; j++)
         {
-            at(i, j) = SandGrain(baseH, baseS, baseV);
-            oldAt(i, j) = SandGrain(baseH, baseS, baseV);
+            oldAt(i, j) = SandGrain(
+                baseH,
+                std::min(1.0, std::max(0.0, baseS + saturationDistribution(randomEngine))),
+                std::min(1.0, std::max(0.0, baseV + valueDistribution(randomEngine)))
+            );
+            at(i, j) = oldAt(i, j);
         }
     }
 }
@@ -106,6 +119,7 @@ void FallingSandSimulation::tick()
 
     for (unsigned int x = 0; x < m_width; x++)
     {
+        std::lock_guard<std::mutex> lock(simulationMutex);
         for (unsigned int y = 0; y < m_height; y++)
         {
             
@@ -139,7 +153,7 @@ void FallingSandSimulation::tick()
                 {
                     if (not (left or right))
                     {
-                        std::swap(oldAt(x, y), oldAt(x + (1 - 2 * (rand() % 2)), y + 1));
+                        std::swap(oldAt(x, y), oldAt(x + (1 - 2 * (coinFlip(randomEngine))), y + 1));
                         continue;
                     }
                     if (left) std::swap(oldAt(x, y), oldAt(x + 1, y + 1));

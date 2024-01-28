@@ -1,6 +1,5 @@
 #include "sandgrain.hpp"
 
-#include <vector>
 #include <cmath>
 
 SandGrain::SandGrain()
@@ -25,13 +24,6 @@ SandGrain::SandGrain(int baseR, int baseG, int baseB)
 SandGrain::SandGrain(double h, double s, double v)
 {
     exists = true;
-
-    s += (rand() / static_cast<double>(RAND_MAX)) * (0.1) - 0.05;
-    s = std::min(s, 1.0);
-    s = std::max(0.0, s);
-    v += (rand() / static_cast<double>(RAND_MAX)) * (0.1) - 0.05;
-    v = std::min(v, 1.0);
-    v = std::max(0.0, v);
 
     h = fmodf64(h, 360.0) / 60;
     long i = static_cast<int>(h);
