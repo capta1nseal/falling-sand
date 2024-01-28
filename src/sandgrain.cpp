@@ -22,8 +22,7 @@ SandGrain::SandGrain(int baseR, int baseG, int baseB)
 {
     exists = true;
 }
-SandGrain::SandGrain(double baseH, double baseS, double baseV)
-    : h(baseH), s(baseS), v(baseV)
+SandGrain::SandGrain(double h, double s, double v)
 {
     exists = true;
 

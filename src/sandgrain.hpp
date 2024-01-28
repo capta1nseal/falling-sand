@@ -19,9 +19,6 @@ public:
     bool operator==(bool other);
 
 private:
-    double h;
-    double s;
-    double v;
 
 };
 

@@ -12,6 +12,8 @@ FallingSandSimulation::FallingSandSimulation()
     sandGrid1.resize(1);
     sandGrid2.resize(1);
 
+    safe_sandGrid.resize(1);
+
     newGridNumber = 1;
     newSandGrid = *(&sandGrid1);
     oldSandGrid = *(&sandGrid2);
@@ -34,6 +36,9 @@ void FallingSandSimulation::initializeSimulation(unsigned int width, unsigned in
 
     sandGrid2.resize(width * height);
     sandGrid2.assign(width * height, false);
+
+    safe_sandGrid.resize(width * height);
+    safe_sandGrid = sandGrid1;
 
     newGridNumber = 1;
     newSandGrid = *(&sandGrid1);
@@ -63,10 +68,13 @@ void FallingSandSimulation::simulationLoop()
     }
 }
 
-const std::vector<SandGrain>& FallingSandSimulation::getSandGrid()
+void FallingSandSimulation::getFrameData(std::vector<SandGrain> &sandGrid)
 {
     std::lock_guard<std::mutex> lock(simulationMutex);
-    return newSandGrid;
+
+    sandGrid.resize(m_width * m_height);
+
+    sandGrid = safe_sandGrid;
 }
 
 void FallingSandSimulation::spawn(unsigned int x, unsigned int y, unsigned int radius)
@@ -98,7 +106,6 @@ void FallingSandSimulation::tick()
 
     for (unsigned int x = 0; x < m_width; x++)
     {
-        std::lock_guard<std::mutex> lock(simulationMutex);
         for (unsigned int y = 0; y < m_height; y++)
         {
             
@@ -152,10 +159,12 @@ void FallingSandSimulation::tick()
         }
     }
 
+    swapGrids();
+
     {
         std::lock_guard<std::mutex> lock(simulationMutex);
 
-        swapGrids();
+        safe_sandGrid = newSandGrid;
     }
 }
 

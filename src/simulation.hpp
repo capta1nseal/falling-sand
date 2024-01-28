@@ -17,7 +17,7 @@ public:
 
     void simulationLoop();
 
-    const std::vector<SandGrain>& getSandGrid();
+    void getFrameData(std::vector<SandGrain> &sandGrid);
 
     void spawn(unsigned int x, unsigned int y, unsigned int radius);
 
@@ -28,6 +28,8 @@ private:
     int newGridNumber;
     std::vector<SandGrain> newSandGrid;
     std::vector<SandGrain> oldSandGrid;
+    
+    std::vector<SandGrain> safe_sandGrid;
 
     bool isRunning;
     std::mutex simulationMutex;

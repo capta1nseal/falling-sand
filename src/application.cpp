@@ -172,7 +172,9 @@ void FallingSandApplication::draw()
     SDL_LockTexture(renderTexture, NULL, reinterpret_cast<void**> (&texturePixels), &texturePitch);
 
     { // draw the sand grid
-        const std::vector<SandGrain>& sandGrid = fallingSandSimulation.getSandGrid();
+        std::vector<SandGrain> sandGrid;
+        sandGrid.resize(displayWidth * displayHeight);
+        fallingSandSimulation.getFrameData(sandGrid);
 
         SDL_SetRenderDrawColor(renderer, 255, 127, 31, 255);
 
