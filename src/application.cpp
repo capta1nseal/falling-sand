@@ -17,6 +17,10 @@ std::chrono::_V2::steady_clock::time_point now()
 FallingSandApplication::FallingSandApplication()
 {
     initializeSdl();
+
+    simulationWidth = 800;
+    simulationHeight = 640;
+
     initializeSimulation();
 
     isRunning = false;
@@ -90,11 +94,42 @@ void FallingSandApplication::destroySdl()
 
 void FallingSandApplication::initializeSimulation()
 {
-    fallingSandSimulation.initializeSimulation(displayWidth, displayHeight);
+    fallingSandSimulation.initializeSimulation(simulationWidth, simulationHeight);
 
-    fallingSandSimulation.setMousePosition(&mousePosition);
+    fallingSandSimulation.setMousePosition(&mappedMousePosition);
 
     initializeRenderTexture();
+}
+
+void FallingSandApplication::initializeRenderTexture()
+{
+    renderTexture = SDL_CreateTexture(
+        renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
+        simulationWidth, simulationHeight
+    );
+
+    calculateScaling();
+}
+
+void FallingSandApplication::calculateScaling()
+{
+    double displayAspectRatio = static_cast<double>(displayWidth) / displayHeight;
+    double simulationAspectRatio = static_cast<double>(simulationWidth) / simulationHeight;
+
+    if (displayAspectRatio <= simulationAspectRatio)
+    {
+        targetRect.w = displayWidth;
+        targetRect.h = displayWidth / simulationAspectRatio;
+        targetRect.x = 0;
+        targetRect.y = (displayHeight - targetRect.h) / 2;
+    }
+    else
+    {
+        targetRect.w = displayHeight * simulationAspectRatio;
+        targetRect.h = displayHeight;
+        targetRect.x = (displayWidth - targetRect.w) / 2;
+        targetRect.y = 0;
+    }
 }
 
 void FallingSandApplication::handleEvents()
@@ -102,6 +137,8 @@ void FallingSandApplication::handleEvents()
     SDL_PumpEvents();
     
     SDL_GetMouseState(&mousePosition.x, &mousePosition.y);
+    mappedMousePosition.x = std::max(0, mousePosition.x - targetRect.x) * static_cast<double>(simulationWidth) / targetRect.w;
+    mappedMousePosition.y = std::max(0, mousePosition.y - targetRect.y) * static_cast<double>(simulationHeight) / targetRect.h;
 
     while (SDL_PollEvent(&event))
     {
@@ -115,10 +152,8 @@ void FallingSandApplication::handleEvents()
             {
                 displayWidth = event.window.data1;
                 displayHeight = event.window.data2;
-                
-                fallingSandSimulation.initializeSimulation(displayWidth, displayHeight);
-            
-                initializeRenderTexture();
+
+                calculateScaling();
             }
             break;
         case SDL_KEYDOWN:
@@ -149,7 +184,7 @@ void FallingSandApplication::handleEvents()
                 fallingSandSimulation.toggleDroppingSand();
                 break;
             case SDL_BUTTON_RIGHT:
-                fallingSandSimulation.spawn(event.button.x, event.button.y, 50);
+                fallingSandSimulation.spawn(mappedMousePosition.x, mappedMousePosition.y, 25);
                 break;
             default:
                 break;
@@ -159,12 +194,6 @@ void FallingSandApplication::handleEvents()
             break;
         }
     }
-}
-
-void FallingSandApplication::initializeRenderTexture()
-{
-    renderTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
-    SDL_TEXTUREACCESS_STREAMING, displayWidth, displayHeight);
 }
 
 void FallingSandApplication::draw()
@@ -178,18 +207,17 @@ void FallingSandApplication::draw()
 
     { // draw the sand grid
         std::vector<SandGrain> sandGrid;
-        sandGrid.resize(displayWidth * displayHeight);
         fallingSandSimulation.getFrameData(sandGrid);
 
         SDL_SetRenderDrawColor(renderer, 255, 127, 31, 255);
 
         SandGrain currentGrain;
 
-        for (unsigned int x = 0; x < displayWidth; x++)
+        for (unsigned int x = 0; x < simulationWidth; x++)
         {
-            for (unsigned int y = 0; y < displayHeight; y++)
+            for (unsigned int y = 0; y < simulationHeight; y++)
             {
-                currentGrain = sandGrid[x * displayHeight + y];
+                currentGrain = sandGrid[x * simulationHeight + y];
 
                 if (currentGrain == true)
                 {
@@ -204,7 +232,6 @@ void FallingSandApplication::draw()
                     texturePixels[y * texturePitch + x * 4 + 1] = static_cast<unsigned char>(0);
                     texturePixels[y * texturePitch + x * 4 + 2] = static_cast<unsigned char>(0);
                     texturePixels[y * texturePitch + x * 4 + 3] = static_cast<unsigned char>(255);
-
                 }
             }
         }
@@ -214,7 +241,7 @@ void FallingSandApplication::draw()
 
     SDL_SetTextureBlendMode(renderTexture, SDL_BLENDMODE_BLEND);
 
-    SDL_RenderCopy(renderer, renderTexture, NULL, NULL);
+    SDL_RenderCopy(renderer, renderTexture, NULL, &targetRect);
 
     SDL_RenderPresent(renderer);
 }

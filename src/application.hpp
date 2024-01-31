@@ -25,13 +25,16 @@ private:
     SDL_Renderer* renderer;
 
     SDL_Texture *renderTexture;
+    SDL_Rect targetRect;
     unsigned char* texturePixels;
     int texturePitch;
 
     SDL_Event event;
     
     SDL_Point mousePosition;
+    SDL_Point mappedMousePosition;
 
+    unsigned int simulationWidth, simulationHeight;
     FallingSandSimulation fallingSandSimulation;
 
     std::thread simulationThread;
@@ -44,6 +47,8 @@ private:
     void initializeSimulation();
 
     void initializeRenderTexture();
+
+    void calculateScaling();
 
     void handleEvents();
 

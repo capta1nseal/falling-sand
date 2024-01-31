@@ -104,13 +104,6 @@ void FallingSandSimulation::getFrameData(std::vector<SandGrain> &sandGrid)
 
 void FallingSandSimulation::spawn(unsigned int x, unsigned int y, unsigned int radius)
 {
-    if (radius > m_width / 2 - 1) radius = m_width / 2 - 1;
-    if (radius > m_height / 2 - 1) radius = m_height / 2 - 1;
-    if (x < radius) x = radius;
-    if (x > m_width - 1 - radius) x = m_width - 1 - radius;
-    if (y < radius) y = radius;
-    if (y > m_height - 1 - radius) y = m_height - 1 - radius;
-
     using UniformDistribution = std::uniform_real_distribution<double>;
 
     double baseH = (UniformDistribution(0.0, 360.0))(randomEngine);
@@ -121,6 +114,13 @@ void FallingSandSimulation::spawn(unsigned int x, unsigned int y, unsigned int r
 }
 void FallingSandSimulation::spawn(unsigned int x, unsigned int y, unsigned int radius, double hue, double saturation, double value)
 {
+    if (radius > m_width / 2) radius = m_width / 2;
+    if (radius > m_height / 2) radius = m_height / 2;
+    if (x < radius) x = radius;
+    if (x > m_width - 1 - radius) x = m_width - 1 - radius;
+    if (y < radius) y = radius;
+    if (y > m_height - 1 - radius) y = m_height - 1 - radius;
+
     using UniformDistribution = std::uniform_real_distribution<double>;
 
     UniformDistribution saturationDistribution(-0.05, 0.05);
@@ -203,7 +203,7 @@ void FallingSandSimulation::tick()
 
     if (droppingSand)
     {
-        spawn(m_mousePosition->x, m_mousePosition->y, 10, droppingHue, droppingSaturation, droppingValue);
+        spawn(m_mousePosition->x, m_mousePosition->y, 6, droppingHue, droppingSaturation, droppingValue);
         droppingHue += 0.01;
     }
 
