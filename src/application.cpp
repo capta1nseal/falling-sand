@@ -92,6 +92,8 @@ void FallingSandApplication::initializeSimulation()
 {
     fallingSandSimulation.initializeSimulation(displayWidth, displayHeight);
 
+    fallingSandSimulation.setMousePosition(&mousePosition);
+
     initializeRenderTexture();
 }
 
@@ -144,6 +146,9 @@ void FallingSandApplication::handleEvents()
             switch (event.button.button)
             {
             case SDL_BUTTON_LEFT:
+                fallingSandSimulation.toggleDroppingSand();
+                break;
+            case SDL_BUTTON_RIGHT:
                 fallingSandSimulation.spawn(event.button.x, event.button.y, 50);
                 break;
             default:

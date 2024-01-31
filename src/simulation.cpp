@@ -5,6 +5,8 @@
 #include <mutex>
 #include <random>
 
+#include <SDL2/SDL_rect.h>
+
 FallingSandSimulation::FallingSandSimulation()
 {
     m_width = 1;
@@ -22,6 +24,8 @@ FallingSandSimulation::FallingSandSimulation()
     coinFlip = std::uniform_int_distribution<int>(0, 1);
 
     isRunning = false;
+
+    droppingSand = false;
 }
 
 void FallingSandSimulation::initializeSimulation(unsigned int width, unsigned int height)
@@ -55,6 +59,24 @@ void FallingSandSimulation::initializeSimulation(unsigned int width, unsigned in
             oldAt(x, y) = true;
         }
     }
+}
+
+void FallingSandSimulation::setMousePosition(SDL_Point *mousePosition)
+{
+    m_mousePosition = mousePosition;
+}
+
+void FallingSandSimulation::toggleDroppingSand()
+{
+    droppingSand = !droppingSand;
+
+    if (!droppingSand) return;
+
+    using UniformDistribution = std::uniform_real_distribution<double>;
+
+    droppingHue = (UniformDistribution(0.0, 360.0))(randomEngine);
+    droppingSaturation = (UniformDistribution(0.25, 0.75))(randomEngine);
+    droppingValue = (UniformDistribution(0.625, 0.875))(randomEngine);
 }
 
 void FallingSandSimulation::stop()
@@ -95,6 +117,12 @@ void FallingSandSimulation::spawn(unsigned int x, unsigned int y, unsigned int r
     double baseS = (UniformDistribution(0.25, 0.75))(randomEngine);
     double baseV = (UniformDistribution(0.625, 0.875))(randomEngine);
 
+    spawn(x, y, radius, baseH, baseS, baseV);
+}
+void FallingSandSimulation::spawn(unsigned int x, unsigned int y, unsigned int radius, double hue, double saturation, double value)
+{
+    using UniformDistribution = std::uniform_real_distribution<double>;
+
     UniformDistribution saturationDistribution(-0.05, 0.05);
     UniformDistribution valueDistribution(-0.05, 0.05);
 
@@ -104,9 +132,9 @@ void FallingSandSimulation::spawn(unsigned int x, unsigned int y, unsigned int r
         for (unsigned int j = y - radius; j < y + radius - 1; j++)
         {
             oldAt(i, j) = SandGrain(
-                baseH,
-                std::min(1.0, std::max(0.0, baseS + saturationDistribution(randomEngine))),
-                std::min(1.0, std::max(0.0, baseV + valueDistribution(randomEngine)))
+                hue,
+                std::min(1.0, std::max(0.0, saturation + saturationDistribution(randomEngine))),
+                std::min(1.0, std::max(0.0, value + valueDistribution(randomEngine)))
             );
             at(i, j) = oldAt(i, j);
         }
@@ -171,6 +199,12 @@ void FallingSandSimulation::tick()
                 }
             }
         }
+    }
+
+    if (droppingSand)
+    {
+        spawn(m_mousePosition->x, m_mousePosition->y, 10, droppingHue, droppingSaturation, droppingValue);
+        droppingHue += 0.01;
     }
 
     swapGrids();
