@@ -31,7 +31,9 @@ private:
     SDL_Event event;
     
     SDL_Point mousePosition;
+    SDL_Point mappedMousePosition;
 
+    unsigned int simulationWidth, simulationHeight;
     FallingSandSimulation fallingSandSimulation;
 
     std::thread simulationThread;
