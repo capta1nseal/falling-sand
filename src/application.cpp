@@ -18,8 +18,8 @@ FallingSandApplication::FallingSandApplication()
 {
     initializeSdl();
 
-    simulationWidth = 400;
-    simulationHeight = 320;
+    simulationWidth = 800;
+    simulationHeight = 640;
 
     initializeSimulation();
 
@@ -101,13 +101,44 @@ void FallingSandApplication::initializeSimulation()
     initializeRenderTexture();
 }
 
+void FallingSandApplication::initializeRenderTexture()
+{
+    renderTexture = SDL_CreateTexture(
+        renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
+        simulationWidth, simulationHeight
+    );
+
+    calculateScaling();
+}
+
+void FallingSandApplication::calculateScaling()
+{
+    double displayAspectRatio = static_cast<double>(displayWidth) / displayHeight;
+    double simulationAspectRatio = static_cast<double>(simulationWidth) / simulationHeight;
+
+    if (displayAspectRatio <= simulationAspectRatio)
+    {
+        targetRect.w = displayWidth;
+        targetRect.h = displayWidth / simulationAspectRatio;
+        targetRect.x = 0;
+        targetRect.y = (displayHeight - targetRect.h) / 2;
+    }
+    else
+    {
+        targetRect.w = displayHeight * simulationAspectRatio;
+        targetRect.h = displayHeight;
+        targetRect.x = (displayWidth - targetRect.w) / 2;
+        targetRect.y = 0;
+    }
+}
+
 void FallingSandApplication::handleEvents()
 {
     SDL_PumpEvents();
     
     SDL_GetMouseState(&mousePosition.x, &mousePosition.y);
-    mappedMousePosition.x = mousePosition.x * static_cast<double>(simulationWidth) / displayWidth;
-    mappedMousePosition.y = mousePosition.y * static_cast<double>(simulationHeight) / displayHeight;
+    mappedMousePosition.x = std::max(0, mousePosition.x - targetRect.x) * static_cast<double>(simulationWidth) / targetRect.w;
+    mappedMousePosition.y = std::max(0, mousePosition.y - targetRect.y) * static_cast<double>(simulationHeight) / targetRect.h;
 
     while (SDL_PollEvent(&event))
     {
@@ -121,6 +152,8 @@ void FallingSandApplication::handleEvents()
             {
                 displayWidth = event.window.data1;
                 displayHeight = event.window.data2;
+
+                calculateScaling();
             }
             break;
         case SDL_KEYDOWN:
@@ -151,7 +184,7 @@ void FallingSandApplication::handleEvents()
                 fallingSandSimulation.toggleDroppingSand();
                 break;
             case SDL_BUTTON_RIGHT:
-                fallingSandSimulation.spawn(event.button.x, event.button.y, 50);
+                fallingSandSimulation.spawn(mappedMousePosition.x, mappedMousePosition.y, 25);
                 break;
             default:
                 break;
@@ -161,12 +194,6 @@ void FallingSandApplication::handleEvents()
             break;
         }
     }
-}
-
-void FallingSandApplication::initializeRenderTexture()
-{
-    renderTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
-    SDL_TEXTUREACCESS_STREAMING, simulationWidth, simulationHeight);
 }
 
 void FallingSandApplication::draw()
@@ -214,7 +241,7 @@ void FallingSandApplication::draw()
 
     SDL_SetTextureBlendMode(renderTexture, SDL_BLENDMODE_BLEND);
 
-    SDL_RenderCopy(renderer, renderTexture, NULL, NULL);
+    SDL_RenderCopy(renderer, renderTexture, NULL, &targetRect);
 
     SDL_RenderPresent(renderer);
 }
