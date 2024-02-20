@@ -117,9 +117,9 @@ void FallingSandSimulation::spawn(unsigned int x, unsigned int y, unsigned int r
     if (radius > m_width / 2) radius = m_width / 2;
     if (radius > m_height / 2) radius = m_height / 2;
     if (x < radius) x = radius;
-    if (x > m_width - 1 - radius) x = m_width - 1 - radius;
+    if (x > m_width + 1 - radius) x = m_width + 1 - radius;
     if (y < radius) y = radius;
-    if (y > m_height - 1 - radius) y = m_height - 1 - radius;
+    if (y > m_height + 1 - radius) y = m_height + 1 - radius;
 
     using UniformDistribution = std::uniform_real_distribution<double>;
 
